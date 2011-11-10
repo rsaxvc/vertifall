@@ -117,13 +117,10 @@ return true;
 
 void JPG_scroller::render_scanline()
 {
-size_t x;
 uint8_t *output = (uint8_t*)line_buffer;
 uint8_t *input = *conv_buffer;
 
 jpeg_read_scanlines(&cinfo, conv_buffer, 1 );
-
-
 color_cnvt( output, input, cinfo.image_width, 3, bpp );
 circ_buffer.insert( line_buffer, 1 );
 }
