@@ -1,4 +1,3 @@
-
 //C++
 #include <cassert>
 #include <iostream>
@@ -13,44 +12,102 @@ using std::endl;
 //local
 #include "GFX_circular_buffer.h"
 
-void GFX_circular_buffer::render( void * output )
+void debug_print( const SDL_Surface * buffer )
 {
+size_t x;
+size_t y;
+size_t pos;
 
-for( size_t y = 0; y < height; ++y )
+for( y = 0; y < buffer->h; ++y )
 	{
-	memcpy( (uint8_t*)output + stride * y, get_local_buf( y ), stride );
+	for( x = 0; x < buffer->w; ++x )
+		{
+		for( pos = 0; pos < buffer->format->BytesPerPixel; ++pos )
+			{
+			printf("%02x",((unsigned char*)buffer->pixels)[ buffer->format->BytesPerPixel * ( y * buffer->w + x ) ] );
+			}
+		printf(" ");
+		}
+    printf("\n");
 	}
 }
 
-void GFX_circular_buffer::insert( void * input_buf, size_t input_h )
+void GFX_circular_buffer::render_raw(SDL_Surface *dst)
 {
-uint8_t * buf;
+SDL_FillRect(dst,NULL,0);
+assert( dst->pitch == buffer-> pitch );
+assert( dst->w == buffer->w );
+assert( dst->h == buffer->h );
+SDL_BlitSurface(buffer, NULL, dst, NULL );
+}
 
-buf = (uint8_t*)input_buf;
+void GFX_circular_buffer::render(SDL_Surface *dst)
+{
+SDL_Rect Src;
+SDL_Rect Dst;
 
-for( size_t y = 0; y < input_h; ++y )
+SDL_FillRect(dst,NULL,0);
+//assert( dst->pitch == buffer-> pitch );
+assert( dst->w == buffer->w );
+assert( dst->h == buffer->h );
+
+//draw newest portion
+Src.x = 0;
+Src.y = 0;
+Src.w = buffer->w;
+Src.h = get_next_idx();
+Dst.x = 0;
+Dst.y = buffer->h - Src.h;
+SDL_BlitSurface(buffer, &Src, dst, &Dst );
+
+//draw older portion
+Src.x = 0;
+Src.y = get_next_idx();
+Src.w = buffer->w;
+Src.h = buffer->h - Src.y;
+Dst.x = 0;
+Dst.y = 0;
+SDL_BlitSurface(buffer, &Src, dst, &Dst );
+
+}
+
+void GFX_circular_buffer::insert( SDL_Surface * srcsurf )
+{
+assert( srcsurf->h == 1 );
+assert( srcsurf->w == buffer->w );
+if( srcsurf->format->BytesPerPixel != buffer->format->BytesPerPixel )
 	{
-	memcpy( get_next_buf(), buf + y * stride, stride );
-
-	usage++;
-	if( usage > height )usage = height;
-
-	offset++;
-	offset%=height;
-	seek++;
+	printf("src bpp=%i, dst bpp=%i, failing", srcsurf->format->BytesPerPixel, buffer->format->BytesPerPixel );
+	assert(0);
 	}
+
+if ( SDL_MUSTLOCK(srcsurf) )SDL_LockSurface(srcsurf);
+if ( SDL_MUSTLOCK(buffer) )SDL_LockSurface(buffer);
+
+memcpy( ((unsigned char*)buffer->pixels) + buffer->format->BytesPerPixel * ( get_next_idx() * srcsurf->w ), srcsurf->pixels, buffer->format->BytesPerPixel * srcsurf->w * srcsurf->h );
+
+if ( SDL_MUSTLOCK(srcsurf) )SDL_UnlockSurface(srcsurf);
+if ( SDL_MUSTLOCK(buffer) )SDL_UnlockSurface(buffer);
+
+usage++;
+if( usage > buffer->h )usage = buffer->h;
+
+
+offset++;
+offset %= buffer->h;
+
+seek++;
 }
 
 void GFX_circular_buffer::print_stats( void )
 {
 
 cout<<"PRINTING STATS"<<endl;
-cout<<"\t   bpp:"<<bpp    <<endl;
-cout<<"\t width:"<<width  <<endl;
-cout<<"\theight:"<<height <<endl;
+cout<<"\t width:"<< buffer->w  <<endl;
+cout<<"\theight:"<< buffer->h <<endl;
 cout<<"\toffset:"<<offset <<endl;
 cout<<"\t count:"<<count  <<endl;
-cout<<"\tstride:"<<stride <<endl;
+cout<<"\t pitch:"<<buffer->pitch<<endl;
 cout<<"DONE PRINTING STATS"<<endl;
 }
 
@@ -68,71 +125,40 @@ void GFX_circular_buffer::close()
 {
 if( buffer )
 	{
-	free( buffer );
+	SDL_FreeSurface( buffer );
 	buffer = NULL;
 	}
 
 offset = 0;
 count = 0;
-stride = 0;
-width = 0;
-height = 0;
 }
 
-bool GFX_circular_buffer::open( size_t temp_width, size_t temp_height, size_t bytes_per_pixel )
+bool GFX_circular_buffer::open( size_t width, size_t height, size_t bytes_per_pixel )
 {
 close();
 
-bpp = bytes_per_pixel;
-width = temp_width;
-height = temp_height;
-stride = width * bpp;
 offset = 0;
 count = 0;
 usage = 0;
 
-buffer = malloc( stride * height );
+buffer = SDL_CreateRGBSurface( SDL_HWSURFACE | SDL_ASYNCBLIT, width, height, 8 * bytes_per_pixel, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF );
+
+if ( SDL_MUSTLOCK(buffer) )printf("buffer must lock\n");
 
 print_stats();
 
 return true;
 }
 
-void * GFX_circular_buffer::get_next_buf()
-{
-return ((uint8_t*)buffer) + stride * get_next_idx();
-}
-
-void * GFX_circular_buffer::get_local_buf( size_t y )
-{
-return ((uint8_t*)buffer) + stride * get_local_idx( y );
-}
-
-void * GFX_circular_buffer::get_buf( size_t y )
-{
-return ((uint8_t*)buffer) + stride * get_idx( y );
-}
-
-size_t GFX_circular_buffer::get_local_idx( size_t y )
-{
-size_t retn;
-
-retn = ( y + height + offset ) % height;
-
-assert( retn < height );
-
-return retn;
-}
-
-size_t GFX_circular_buffer::get_idx( size_t y )
-{
-assert(0);
-}
+//void * GFX_circular_buffer::get_next_buf()
+//{
+//return ((uint8_t*)buffer) + stride * get_next_idx();
+//}
 
 size_t GFX_circular_buffer::get_next_idx()
 {
 assert( offset <= usage || offset == 0 );
-assert( offset < height );
+assert( offset < buffer->h );
 
 return offset;
 }

@@ -16,21 +16,14 @@ using std::endl;
 //local
 #include "JPG_scroller.h"
 
+#define BPP 3
 #define MAX_LINES_AT_ONCE 4
-
-
-void JPG_color_cnvt_loopback(void*out, unsigned char const*in, size_t num_pxls, size_t input_bpp, size_t output_bpp)
-{
-memcpy(out,in,3 * num_pxls);
-}
 
 void JPG_scroller::print_stats( void )
 {
 
 cout<<"PRINTING STATS"<<endl;
 cout<<"\t     filename:"<<fname              <<endl;
-cout<<"\t          bpp:"<<bpp                <<endl;
-cout<<"\t       stride:"<<stride             <<endl;
 cout<<"\t image_height:"<<cinfo.image_height <<endl;
 cout<<"\t  image_width:"<<cinfo.image_width  <<endl;
 cout<<"\t         seek:"<<buffer_seek        <<endl;
@@ -67,7 +60,7 @@ else if( fname || line_buffer )
 	}
 }
 
-bool JPG_scroller::open( const char * filename, size_t buffer_height, JPG_cnvt_color function, size_t bytes_per_pixel )
+bool JPG_scroller::open( const char * filename, size_t buffer_height )
 {
 size_t conv_stride;
 size_t i;
@@ -83,8 +76,6 @@ if ((infile = fopen(fname, "rb")) == NULL)
 	return false;
 	}
 
-color_cnvt = function;
-bpp = bytes_per_pixel;
 buffer_seek = 0;
 
 cinfo.err = jpeg_std_error(&jerr.pub);
@@ -100,11 +91,9 @@ conv_stride = cinfo.output_width * cinfo.output_components;
 /* Make a four-row-high sample array that will go away when done with image */
 conv_buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, conv_stride, MAX_LINES_AT_ONCE );
 
-stride = bpp * cinfo.image_width;
+line_buffer = SDL_CreateRGBSurface( SDL_SWSURFACE, cinfo.output_width, 1, 8 * BPP, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF );
 
-line_buffer = malloc( stride );
-
-circ_buffer.open( cinfo.image_width, buffer_height, bpp );
+circ_buffer.open( cinfo.image_width, buffer_height, BPP );
 
 for( i = 0; i < buffer_height; ++i )
 	{
@@ -117,17 +106,33 @@ return true;
 
 void JPG_scroller::render_scanline()
 {
-uint8_t *output = (uint8_t*)line_buffer;
 uint8_t *input = *conv_buffer;
 
 jpeg_read_scanlines(&cinfo, conv_buffer, 1 );
-color_cnvt( output, input, cinfo.image_width, 3, bpp );
-circ_buffer.insert( line_buffer, 1 );
+
+if ( SDL_MUSTLOCK(line_buffer) )
+    {
+    if ( SDL_LockSurface(line_buffer) < 0 )
+        {
+        return;
+        }
+    }
+
+memcpy( line_buffer->pixels, input, cinfo.image_width * BPP );
+
+if ( SDL_MUSTLOCK(line_buffer) )
+    {
+    SDL_UnlockSurface(line_buffer);
+    }
+
+circ_buffer.insert( line_buffer );
 }
 
-void JPG_scroller::render( void * output, size_t y )
+void JPG_scroller::JPG_scroller::render( SDL_Surface*dstsurf, int y )
 {
 size_t lines_to_render;
+
+assert( dstsurf->h == circ_buffer.get_height() );
 
 //Generate new buffer lines
 if( y > buffer_seek )
@@ -141,12 +146,7 @@ if( y > buffer_seek )
 		lines_to_render--;
 		}
 	}
-else if( y < buffer_seek )
-	{
-	//This part of the image has already scrolled away
-	assert(0);
-	}
 
 //blit buffer lines to output surface
-circ_buffer.render( output );
+circ_buffer.render( dstsurf );
 }
