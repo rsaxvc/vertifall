@@ -20,55 +20,26 @@ ship::~ship()
 {
 }
 
-static void draw_tet( const GLfloat * v0, const GLfloat * v1, const GLfloat * v2, const GLfloat * v3 )
-{
-glVertex3fv( v0 );
-glVertex3fv( v1 );
-
-glVertex3fv( v1 );
-glVertex3fv( v2 );
-
-glVertex3fv( v2 );
-glVertex3fv( v3 );
-
-glVertex3fv( v0 );
-glVertex3fv( v3 );
-
-glVertex3fv( v1 );
-glVertex3fv( v3 );
-
-glVertex3fv( v0 );
-glVertex3fv( v2 );
-}
-
 void ship::draw()
 {
-#define LEN 4.0f
-{
-//Top left pylon
-GLfloat v0[] = { -1.5f,  1.0f,  0.0f };
-GLfloat v1[] = { -0.5f,  1.0f,  0.0f };
-GLfloat v2[] = { -1.0f,  0.0f,  0.0f };
-GLfloat v3[] = { -1.0f,  0.5f,  LEN  };
-draw_tet( v0,v1,v2,v3 );
-}
+#define LEN 1.0f
+#define line( _pt1,_pt2 ) glVertex3fv( _pt1 );glVertex3fv( _pt2 )
+GLfloat v0[] = { -LEN, -LEN, 0.0f };
+GLfloat v1[] = { -LEN,  LEN, 0.0f };
+GLfloat v2[] = {  LEN,  LEN, 0.0f };
+GLfloat v3[] = {  LEN, -LEN, 0.0f };
+GLfloat v4[] = {  0.0f, 0.0f, LEN };
+GLfloat v5[] = {  0.0f, 0.0f, LEN * 2 };
 
-{
-//Top right pylon
-GLfloat v0[] = {  1.5f,  1.0f,  0.0f };
-GLfloat v1[] = {  0.5f,  1.0f,  0.0f };
-GLfloat v2[] = {  1.0f,  0.0f,  0.0f };
-GLfloat v3[] = {  1.0f,  0.5f,  LEN  };
-draw_tet( v0,v1,v2,v3 );
-}
+line( v0, v1 );
+line( v1, v2 );
+line( v2, v3 );
+line( v3, v0 );
 
-{
-//Bottom pylon
-GLfloat v0[] = {  0.5f,  -1.0f,  0.0f };
-GLfloat v1[] = { -0.5f,  -1.0f,  0.0f };
-GLfloat v2[] = {  0.0f,  0.0f,  0.0f };
-GLfloat v3[] = {  0.0f,  0.5f,  LEN  };
-draw_tet( v0,v1,v2,v3 );
-}
+line( v0, v4 );
+line( v1, v4 );
+line( v2, v4 );
+line( v3, v4 );
 
+line( v4, v5 );
 }
