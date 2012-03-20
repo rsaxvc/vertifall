@@ -2,12 +2,15 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "ship.h"
 #include "timer.h"
 #include "timer_bidi.h"
+
+#define glError() {GLenum err = glGetError();while (err != GL_NO_ERROR) {fprintf(stderr, "glError: %s caught at %s:%u\n",(char *)gluErrorString(err), __FILE__, __LINE__);err = glGetError();}}
+
 
 //timer tim_a;
 //timer tim_b;
@@ -203,65 +206,56 @@ if( fill )
 static void draw_screen( void )
 {
 static ship s;
+/* Clear the color and depth buffers. */
+glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+glError();
 
-    /*
-     * EXERCISE:
-     * Replace this awful mess with vertex
-     * arrays and a call to glDrawElements.
-     *
-     * EXERCISE:
-     * After completing the above, change
-     * it to use compiled vertex arrays.
-     *
-     * EXERCISE:
-     * Verify my windings are correct here ;).
-     */
+/* We don't want to modify the projection matrix. */
+glMatrixMode( GL_MODELVIEW );
+glError();
+glLoadIdentity( );
+glError();
+/* Move down the z-axis. */
+glTranslatef( 0.0, 0.0, -15.0 ); glError();
 
-    /* Clear the color and depth buffers. */
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+glPushMatrix(); glError();
 
-    /* We don't want to modify the projection matrix. */
-    glMatrixMode( GL_MODELVIEW );
-    glLoadIdentity( );
-
-    /* Move down the z-axis. */
-    glTranslatef( 0.0, 0.0, -10.0 );
-
-    /* Rotate. */
-    glRotatef( 100 * tim_x.read(), 1.0, 0.0, 0.0 );
-    glRotatef( 100 * tim_y.read(), 0.0, 1.0, 0.0 );
+/* Rotate. */
+//glRotatef( 100 * tim_x.read(), 1.0, 0.0, 0.0 );
+//glRotatef( 100 * tim_y.read(), 0.0, 1.0, 0.0 );
 //    glRotatef( 100 * tim_c.read(), 0.0, 0.0, 1.0 );
 
-    /* Send our triangle data to the pipeline. */
+glTranslatef( 5 * tim_x.read(), 5 * tim_y.read(), 0 );
+glError();
 
-//    glBegin( GL_POINTS );
-    glBegin( GL_LINES );
+glBegin( GL_LINES );
 
-	float dx=5*tim_x.read();
-	float dy=5*tim_y.read();
-	for( int x=-5;x<5;++x )
+#define BRICK_CNT 40//actually sqrt(brick count)
+for( int x=-BRICK_CNT;x<BRICK_CNT;++x )
+	{
+	for( int y=-BRICK_CNT;y<BRICK_CNT;++y)
 		{
-		for( int y=0;y<5;++y)
-			{
-			//draw_rect(x+dx,y+dy,1,1,y==0,true);
-			}
+		draw_rect(x,y,1,1,y==0,true);
 		}
+	}
+glEnd();
+glError();
 
-	s.draw();
-//    glColor4ubv( green );
-	glEnd( );
+glPopMatrix();
+glError();
 
-    /*
-     * Swap the buffers. This this tells the driver to
-     * render the next frame from the contents of the
-     * back-buffer, and to set all rendering operations
-     * to occur on what was the front-buffer.
-     *
-     * Double buffering prevents nasty visual tearing
-     * from the application drawing on areas of the
-     * screen that are being updated at the same time.
-     */
-    SDL_GL_SwapBuffers( );
+glRotatef( 100 * tim_x.read(), 1.0, 0.0, 0.0 );
+glRotatef( 100 * tim_y.read(), 0.0, 1.0, 0.0 );
+
+s.draw();
+
+/*
+ * Swap the buffers. This this tells the driver to
+ * render the next frame from the contents of the
+ * back-buffer, and to set all rendering operations
+ * to occur on what was the front-buffer.
+ */
+SDL_GL_SwapBuffers( );
 }
 
 static void setup_opengl( int width, int height )
@@ -412,7 +406,7 @@ int main( int argc, char* argv[] )
 		timer t(true);
         /* Draw the screen. */
         draw_screen( );
-		printf("FPS:%f\n",1./t.read() );
+//		printf("FPS:%f\n",1./t.read() );
     }
 
     /*

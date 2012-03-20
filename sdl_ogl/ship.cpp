@@ -2,8 +2,17 @@
 #include <GL/glu.h>
 
 #include <cmath>
+#include <cstdio>
 #include "global.h"
 #include "ship.h"
+
+#define glError() { \
+	GLenum err = glGetError(); \
+	while (err != GL_NO_ERROR) { \
+		fprintf(stderr, "glError: %s caught at %s:%u\n", (char *)gluErrorString(err), __FILE__, __LINE__); \
+		err = glGetError(); \
+	} \
+}
 
 ship::ship()
 {
@@ -14,6 +23,12 @@ ang.roll = 0;
 pos.x = 0;
 pos.y = 0;
 pos.z = 0;
+
+vel.dx = 0;
+vel.dy = 0;
+vel.dz = 0;
+
+weapon_timer = 0;
 }
 
 ship::~ship()
@@ -22,6 +37,15 @@ ship::~ship()
 
 void ship::draw()
 {
+glPushMatrix();
+glError();
+//glTranslatef( pos.x, pos.y, pos.z );
+//glError();
+//glRotatef( ang.yaw, ang.pitch, ang.roll, 1.0 );
+//glError();
+
+glBegin( GL_LINES );
+
 #define LEN 1.0f
 #define line( _pt1,_pt2 ) glVertex3fv( _pt1 );glVertex3fv( _pt2 )
 GLfloat v0[] = { -LEN, -LEN, 0.0f };
@@ -42,4 +66,9 @@ line( v2, v4 );
 line( v3, v4 );
 
 line( v4, v5 );
+
+glEnd();
+glError();
+glPopMatrix();
+glError();
 }
