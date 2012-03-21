@@ -39,7 +39,7 @@ return pos;
 
 void ship::calcPos()
 {
-pos.x =  4 * tim_x.read();
+pos.x = -6 * tim_x.read();
 pos.y = -8;
 }
 

@@ -31,7 +31,7 @@ tim.reset();
 
 void bullet::calcPos()
 {
-pos.y += tim.read();
+pos.y += 7 * tim.read();
 tim.reset();
 }
 
