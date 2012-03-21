@@ -26,7 +26,7 @@ bullet::~bullet()
 bullet::bullet( const position & input )
 {
 pos = input;
-tim.resume();
+tim.reset();
 }
 
 void bullet::calcPos()
