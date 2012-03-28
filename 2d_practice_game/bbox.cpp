@@ -7,7 +7,5 @@ return
 	lhs.swc.x < rhs.nec.x &&
 	lhs.nec.y > rhs.swc.y &&
 	lhs.swc.y < rhs.nec.y;
-
-return 4;
 }
 
