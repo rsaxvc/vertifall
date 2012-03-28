@@ -19,7 +19,7 @@
 void enemy::calcPos()
 {
 double ang;
-ang = tim.read();
+ang = 1.5 * tim.read();
 
 pos.x = 0 + 8*cos(ang);
 pos.y = 2 + 6*sin(ang);

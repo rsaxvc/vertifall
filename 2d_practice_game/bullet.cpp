@@ -8,8 +8,8 @@
 #include "bullet.h"
 
 
-#define WIDTH .5
-#define HEIGHT .75
+#define WIDTH .25
+#define HEIGHT .5
 
 #define glError() { \
 	GLenum err = glGetError(); \
@@ -39,7 +39,7 @@ void bullet::calcBbox()
 {
 calcPos();
 box.nec.x = pos.x + WIDTH;
-box.nec.y = pos.y + HEIGHT;
+box.nec.y = pos.y + HEIGHT + HEIGHT;
 box.swc.x = pos.x - WIDTH;
 box.swc.y = pos.y - HEIGHT;
 }
