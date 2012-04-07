@@ -1,3 +1,4 @@
+//http://cc.byexamples.com/2008/06/07/how-to-embed-lua-51-in-c/
 //http://csl.sublevel3.org/lua/
 
 #include <cstdio>
