@@ -5,6 +5,7 @@ struct position
     {
 	position();
 	position( const position & lhs, const position & rhs );
+	position( float init_x, float init_y, float init_z ):x(init_x),y(init_y),z(init_z){};
     float x;
     float y;
     float z;
