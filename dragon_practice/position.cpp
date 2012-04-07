@@ -17,10 +17,11 @@ float position::distanceTo( const position & rhs)const
 return sqrt( square( x - rhs.x ) + square( y - rhs.y ) + square( z - rhs.z ) );
 }
 
-position position::projectTo( const position & rhs, float distance )const
+position position::projectTo( const position & rhs, float projection_dist )const
 {
-//fixme - make this a projection instead of an averager
-position retn(*this,rhs);
+float true_dist = distanceTo( rhs );
+float ratio = projection_dist / true_dist;
+position retn( x + (rhs.x - x) * ratio, y + (rhs.y - y) * ratio, z + (rhs.z - z) * ratio);
 
 return retn;
 }
