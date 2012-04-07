@@ -1,5 +1,5 @@
 LFLAGS=-lSDL -lGL -lGLU
-CFLAGS=-O4
+CFLAGS=-O0 -Wall
 
 a.out:\
 	main.o\
@@ -7,7 +7,7 @@ a.out:\
 	timer_bidi.o\
 	ship.o\
 	global.o
-	g++ -o a.out *.o ${LFLAGS}
+	g++ -o $@ $?  ${LFLAGS}
 
 clean:
 	rm -f *.o

@@ -17,7 +17,7 @@ a.out:\
 	timer_bidi.o\
 	ship.o\
 	position.o
-	g++ -o a.out *.o ${LFLAGS}
+	g++ -o $@ $? ${LFLAGS}
 
 clean:
 	rm -f *.o .depend
