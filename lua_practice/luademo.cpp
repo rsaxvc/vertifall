@@ -11,28 +11,92 @@ extern "C"
 	#include <lauxlib.h>
 	}
 
-static int my_name( lua_State * L )
+
+enum
+	{
+	OBJECT_CLASS_PLAYER,
+	OBJECT_CLASS_GOON,
+	OBJECT_CLASS_DRAGON,
+	OBJECT_CLASS_CNT
+	};
+
+static const char * object_class_names[]=
 {
-lua_pushstring(L,"frank");
+"player",
+"goon",
+"dragon"
+};
+
+static int num_objects( lua_State * L )
+{
+lua_pushinteger( L, 1 );
 return 1;
 }
 
-static int my_location( lua_State * L )
+static int my_id( lua_State * L )
 {
-lua_pushnumber(L, (lua_Number)1. );
-lua_pushnumber(L, (lua_Number)2. );
-return 2;
+lua_pushinteger( L, 0 );
+return 1;
 }
 
-static int my_top_speed( lua_State * L )
+static int object_class( lua_State * L )
+{
+int object_id = lua_tointeger( L, -1 );
+lua_pop( L, 1 );
+
+lua_pushinteger( L, OBJECT_CLASS_GOON );
+return 1;
+}
+
+static int object_class_name( lua_State * L )
+{
+object_class( L );
+
+int object_class = lua_tointeger( L, -1 );
+lua_pop( L, 1 );
+
+lua_pushstring( L, object_class_names[object_class] );
+return 1;
+}
+
+static int object_name( lua_State * L )
+{
+int object_id = lua_tointeger( L, -1 );
+lua_pop( L, 1 );
+
+lua_pushstring( L, "frank" );
+return 1;
+}
+
+static int object_location( lua_State * L )
+{
+int object_id = lua_tointeger( L, -1 );
+lua_pop( L, 1 );
+
+lua_pushnumber( L, (lua_Number)1. );
+lua_pushnumber( L, (lua_Number)2. );
+lua_pushnumber( L, (lua_Number)3. );
+return 3;
+}
+
+static int object_speed( lua_State * L )
+{
+int object_id = lua_tointeger( L, -1 );
+lua_pop( L, 1 );
+
+lua_pushnumber( L, (lua_Number)1. );
+return 1;
+}
+
+static int object_top_speed( lua_State * L )
 {
 lua_pushnumber(L, (lua_Number) 1. );
 return 1;
 }
 
-#define FUNC_TABLE_STRINGIZE_2(_x) #_x
-#define FUNC_TABLE_STRINGIZE(_x) FUNC_TABLE_STRINGIZE_2(_x)
-#define FUNC_TABLE_ENTRY( _name ) { FUNC_TABLE_STRINGIZE( _name ), (_name) }
+#define STRINGIZE_2(_x) #_x
+#define STRINGIZE(_x) STRINGIZE_2(_x)
+#define ENTRY( _name ) { STRINGIZE( _name ), (_name) }
 struct
 	{
 	const char * name;
@@ -40,9 +104,15 @@ struct
 	}
 const lua_funcs[]=
 	{
-	FUNC_TABLE_ENTRY( my_location ),
-	FUNC_TABLE_ENTRY( my_name ),
-	FUNC_TABLE_ENTRY( my_top_speed )
+	ENTRY( my_id ),
+	ENTRY( num_objects ),
+	ENTRY( object_location ),
+	ENTRY( object_name ),
+	ENTRY( object_top_speed ),
+	ENTRY( object_speed ),
+	ENTRY( object_name ),
+	ENTRY( object_class ),
+	ENTRY( object_class_name )
 	};
 
 static void register_functions( lua_State * L )
@@ -56,12 +126,15 @@ for( i = 0; i < sizeof( lua_funcs ) / sizeof( lua_funcs[0] ); ++i )
 
 int main()
 {
-    lua_State *L = lua_open();
-    luaL_openlibs(L);
+	lua_State *L = lua_open();
+	luaL_openlibs(L);
 	register_functions(L);
 
-    luaL_dofile(L,"foo.lua");
+	if( luaL_dofile(L,"foo.lua") )
+		{
+		printf("Lua error:%s\n",lua_tostring( L, 1 ) );
+		}
 
-    lua_close(L);
-    return 0;
+	lua_close(L);
+	return 0;
 }
