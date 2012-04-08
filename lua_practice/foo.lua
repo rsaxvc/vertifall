@@ -1,3 +1,3 @@
-avg, sum = average(1,2,3,4,5,6,7,8,9,10)
-print ("avg:",avg)
-print ("sum:",sum)
+name = my_name()
+x,y = my_location()
+print ("Doing AI for:",name,"located at",x,",",y)

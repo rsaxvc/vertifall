@@ -11,35 +11,48 @@ extern "C"
 	#include <lauxlib.h>
 	}
 
-static int average( lua_State * L )
+static int my_name( lua_State * L )
 {
-	/* get number of arguments */
-	int n = lua_gettop(L);
-	double sum = 0;
-	int i;
+lua_pushstring(L,"frank");
+return 1;
+}
 
-	/* loop through each argument */
-	for (i = 1; i <= n; i++)
+static int my_location( lua_State * L )
+{
+lua_pushnumber(L, (lua_Number)1. );
+lua_pushnumber(L, (lua_Number)2. );
+return 2;
+}
+
+#define STRINGIZE_2(_x) #_x
+#define STRINGIZE(_x) STRINGIZE_2(_x)
+
+#define FUNC_TABLE_ENTRY( _name ) { STRINGIZE( _name ), (_name) }
+struct
 	{
-		/* total the arguments */
-		sum += lua_tonumber(L, i);
+	const char * name;
+	const lua_CFunction func;
 	}
+const lua_funcs[]=
+	{
+	FUNC_TABLE_ENTRY( my_location ),
+	FUNC_TABLE_ENTRY( my_name ),
+	};
 
-	/* push the average */
-	lua_pushnumber(L, sum / n);
-
-	/* push the sum */
-	lua_pushnumber(L, sum);
-
-	/* return the number of results */
-	return 2;
+static void register_functions( lua_State * L )
+{
+size_t i;
+for( i = 0; i < sizeof( lua_funcs ) / sizeof( lua_funcs[0] ); ++i )
+	{
+	lua_register( L, lua_funcs[i].name, lua_funcs[i].func );
+	}
 }
 
 int main()
 {
     lua_State *L = lua_open();
     luaL_openlibs(L);
-	lua_register(L, "average", average);
+	register_functions(L);
 
     luaL_dofile(L,"foo.lua");
 
