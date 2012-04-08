@@ -1,4 +1,4 @@
-n_obs = num_objects() - 1
+n_obs = global_num_objects() - 1
 for iter=0,n_obs do
 	print ("examining object#",iter)
 	print ("\tLocation:", object_location( iter ) )
