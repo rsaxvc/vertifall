@@ -3,6 +3,7 @@
 //http://csl.sublevel3.org/lua/
 
 #include <cstdio>
+#include <cassert>
 
 extern "C"
 	{
@@ -29,18 +30,22 @@ static const char * object_class_names[]=
 
 static int num_objects( lua_State * L )
 {
+assert( lua_gettop( L ) == 0 );
 lua_pushinteger( L, 1 );
 return 1;
 }
 
 static int my_id( lua_State * L )
 {
+assert( lua_gettop( L ) == 0 );
 lua_pushinteger( L, 0 );
 return 1;
 }
 
 static int object_class( lua_State * L )
 {
+assert( lua_gettop( L ) == 1 );
+
 int object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
@@ -50,6 +55,8 @@ return 1;
 
 static int object_class_name( lua_State * L )
 {
+assert( lua_gettop( L ) == 1 );
+
 object_class( L );
 
 int object_class = lua_tointeger( L, -1 );
@@ -61,6 +68,8 @@ return 1;
 
 static int object_name( lua_State * L )
 {
+assert( lua_gettop( L ) == 1 );
+
 int object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
@@ -70,6 +79,8 @@ return 1;
 
 static int object_location( lua_State * L )
 {
+assert( lua_gettop( L ) == 1 );
+
 int object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
@@ -81,6 +92,8 @@ return 3;
 
 static int object_speed( lua_State * L )
 {
+assert( lua_gettop( L ) == 1 );
+
 int object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
@@ -90,6 +103,8 @@ return 1;
 
 static int object_top_speed( lua_State * L )
 {
+assert( lua_gettop( L ) == 1 );
+
 lua_pushnumber(L, (lua_Number) 1. );
 return 1;
 }
