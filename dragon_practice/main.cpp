@@ -270,8 +270,8 @@ int main( int argc, char* argv[] )
      * safe. Under Win32, ChangeDisplaySettings
      * can change the bpp.
      */
-    width = 700;
-    height = 600;
+    width = 1200;
+    height = 650;
 //    width = 1280;
 //    height = 768;
     bpp = info->vfmt->BitsPerPixel;
