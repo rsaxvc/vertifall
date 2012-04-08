@@ -24,6 +24,12 @@ lua_pushnumber(L, (lua_Number)2. );
 return 2;
 }
 
+static int my_top_speed( lua_State * L )
+{
+lua_pushnumber(L, (lua_Number) 1. );
+return 1;
+}
+
 #define FUNC_TABLE_STRINGIZE_2(_x) #_x
 #define FUNC_TABLE_STRINGIZE(_x) FUNC_TABLE_STRINGIZE_2(_x)
 #define FUNC_TABLE_ENTRY( _name ) { FUNC_TABLE_STRINGIZE( _name ), (_name) }
@@ -36,6 +42,7 @@ const lua_funcs[]=
 	{
 	FUNC_TABLE_ENTRY( my_location ),
 	FUNC_TABLE_ENTRY( my_name ),
+	FUNC_TABLE_ENTRY( my_top_speed )
 	};
 
 static void register_functions( lua_State * L )
