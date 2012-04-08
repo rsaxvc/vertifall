@@ -1,5 +1,5 @@
 LFLAGS=-lSDL -lGL -lGLU
-CFLAGS=-O0 -g -Wall
+CFLAGS=-O0 -g -Wall -Wextra
 CPPFLAGS=${CFLAGS}
 SOURCES=`ls *.cpp`
 
