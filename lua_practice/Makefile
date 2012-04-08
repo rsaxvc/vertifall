@@ -3,8 +3,9 @@ LFLAGS= /usr/lib/x86_64-linux-gnu/liblua5.1.so
 CFLAGS=-O0 -g -Wall -I /usr/include/lua5.1
 CPPFLAGS=${CFLAGS}
 SOURCES=`ls *.cpp`
+BUILDS=luademo
 
-all: .depend luademo
+all: .depend $(BUILDS)
 
 .depend:
 	fastdep $(SOURCES) > .depend
@@ -16,4 +17,4 @@ luademo:\
 	g++ -o $@ $? ${LFLAGS}
 
 clean:
-	rm -f *.o .depend
+	rm -f *.o .depend $(BUILDS)
