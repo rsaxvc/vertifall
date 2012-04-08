@@ -24,10 +24,9 @@ lua_pushnumber(L, (lua_Number)2. );
 return 2;
 }
 
-#define STRINGIZE_2(_x) #_x
-#define STRINGIZE(_x) STRINGIZE_2(_x)
-
-#define FUNC_TABLE_ENTRY( _name ) { STRINGIZE( _name ), (_name) }
+#define FUNC_TABLE_STRINGIZE_2(_x) #_x
+#define FUNC_TABLE_STRINGIZE(_x) FUNC_TABLE_STRINGIZE_2(_x)
+#define FUNC_TABLE_ENTRY( _name ) { FUNC_TABLE_STRINGIZE( _name ), (_name) }
 struct
 	{
 	const char * name;
