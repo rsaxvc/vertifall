@@ -11,15 +11,20 @@ class enemy : private entity
     {
     private:
 		timer_bidirectional tim;
-		void calcState();
+
     public:
         enemy();
         ~enemy();
+		inline entity_class getClass(){return CLASS_GOON;};
 		const bbox & getBbox();
 		const position & getPos();
 		const velocity & getVel();
+		float getSpeed();
+		float getTopSpeed();
+
         void draw();
-		float speed();
+
+		void calcState();
     };
 
 #endif

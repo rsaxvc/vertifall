@@ -19,7 +19,12 @@
 	} \
 }
 
-float bullet::speed()
+float bullet::getSpeed()
+{
+return SPEED;
+}
+
+float bullet::getTopSpeed()
 {
 return SPEED;
 }
@@ -51,26 +56,21 @@ vel.dz = 0;
 
 const velocity & bullet::getVel()
 {
-calcState();
 return vel;
 }
 
 const bbox & bullet::getBbox()
 {
-calcState();
 return box;
 }
 
 const position & bullet::getPos()
 {
-calcState();
 return pos;
 }
 
 void bullet::draw()
 {
-calcState();
-
 glPushMatrix();
 glError();
 

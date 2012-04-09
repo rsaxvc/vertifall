@@ -10,20 +10,23 @@
 class ship : private entity
     {
 	private:
-		void calcPos();
-		void calcBbox();
-		void calcVel();
 
     public:
 		timer_bidirectional tim_x;
+		inline entity_class getClass(){return CLASS_PLAYER;};
 
         ship();
         ~ship();
+
 		const bbox & getBbox();
 		const position & getPos();
 		const velocity & getVel();
+		float getSpeed();
+		float getTopSpeed();
+
         void draw();
-		float speed();
+
+		void calcState();
     };
 
 #endif

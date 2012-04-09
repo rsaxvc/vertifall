@@ -17,35 +17,36 @@
 	} \
 }
 
-float ship::speed()
+float ship::getSpeed()
 {
-calcVel();
 return sqrt( vel.dx*vel.dx + vel.dy*vel.dy + vel.dz*vel.dz );
 }
 
-void ship::calcBbox()
+float ship::getTopSpeed()
 {
-calcPos();
-box.nec.x = pos.x + WIDTH;
-box.nec.y = pos.y + HEIGHT;
-box.swc.x = pos.x - WIDTH;
-box.swc.y = pos.y - HEIGHT;
+return SPEED;
 }
 
 const bbox & ship::getBbox()
 {
-calcBbox();
 return box;
 }
 
 const velocity & ship::getVel()
 {
-calcVel();
 return vel;
 }
 
-void ship::calcVel()
+void ship::calcState()
 {
+pos.x = -SPEED * tim_x.read();
+pos.y = -8;
+
+box.nec.x = pos.x + WIDTH;
+box.nec.y = pos.y + HEIGHT;
+box.swc.x = pos.x - WIDTH;
+box.swc.y = pos.y - HEIGHT;
+
 vel.dy = 0;
 vel.dz = 0;
 if( tim_x.counting_up() )
@@ -64,14 +65,7 @@ else
 
 const position & ship::getPos()
 {
-calcPos();
 return pos;
-}
-
-void ship::calcPos()
-{
-pos.x = -SPEED * tim_x.read();
-pos.y = -8;
 }
 
 ship::ship()
@@ -85,8 +79,6 @@ ship::~ship()
 
 void ship::draw()
 {
-calcPos();
-
 glPushMatrix();
 glError();
 

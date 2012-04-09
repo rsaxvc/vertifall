@@ -9,16 +9,20 @@ class bullet : private entity
 	{
 	private:
 		timer tim;
-		void calcState();
 
 	public:
 		bullet( const position & spawn_pos );
 		~bullet();
+		inline entity_class getClass(){return CLASS_BULLET;};
 		const bbox & getBbox();
 		const position & getPos();
 		const velocity & getVel();
+		float getSpeed();
+		float getTopSpeed();
+
 		void draw();
-		float speed();
+
+		void calcState();
 	};
 
 #endif

@@ -19,14 +19,18 @@
 #define WIDTH 1
 #define HEIGHT 1
 
-float enemy::speed()
+float enemy::getSpeed()
 {
 return sqrt( vel.dx*vel.dx + vel.dy*vel.dy + vel.dz*vel.dz );
 }
 
+float enemy::getTopSpeed()
+{
+return SPEED;
+}
+
 const velocity & enemy::getVel()
 {
-calcState();
 return vel;
 }
 
@@ -51,13 +55,11 @@ box.swc.y = pos.y - HEIGHT;
 
 const bbox & enemy::getBbox()
 {
-calcState();
 return box;
 }
 
 const position & enemy::getPos()
 {
-calcState();
 return pos;
 }
 
@@ -72,8 +74,6 @@ enemy::~enemy()
 
 void enemy::draw()
 {
-calcState();
-
 glPushMatrix();
 glError();
 

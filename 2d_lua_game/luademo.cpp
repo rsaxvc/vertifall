@@ -42,23 +42,6 @@ enum
 	OBJECT_UPDATE_DONE     //update has happened
 	};
 
-enum
-	{
-	OBJECT_CLASS_PLAYER,
-	OBJECT_CLASS_GOON,
-	OBJECT_CLASS_DRAGON,
-	OBJECT_CLASS_BULLET,
-	OBJECT_CLASS_CNT
-	};
-
-static const char * object_class_names[]=
-{
-"player",
-"goon",
-"dragon",
-"bullet"
-};
-
 /*sum players+bullets+enemies*/
 static int global_num_objects( lua_State * L )
 {
@@ -151,15 +134,15 @@ lua_pop( L, 1 );
 switch( object_id )
 	{
 	case 0:
-		lua_pushinteger( L, OBJECT_CLASS_PLAYER );
+		lua_pushinteger( L, CLASS_PLAYER );
 		break;
 
 	case 1:
-		lua_pushinteger( L, OBJECT_CLASS_GOON );
+		lua_pushinteger( L, CLASS_GOON );
 		break;
 
 	default:
-		lua_pushinteger( L, OBJECT_CLASS_BULLET );
+		lua_pushinteger( L, CLASS_BULLET );
 		break;
 	}
 return 1;
@@ -167,6 +150,14 @@ return 1;
 
 static int object_class_name( lua_State * L )
 {
+static const char * names[]=
+	{
+	"player",
+	"goon",
+	"dragon",
+	"bullet"
+	};
+
 assert( lua_gettop( L ) == 1 );
 
 object_class( L );
@@ -174,7 +165,7 @@ object_class( L );
 int object_class = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
-lua_pushstring( L, object_class_names[object_class] );
+lua_pushstring( L, names[object_class] );
 return 1;
 }
 
@@ -271,7 +262,24 @@ assert( lua_gettop( L ) == 1 );
 int object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
-lua_pushnumber( L, (lua_Number)1. );
+float speed;
+
+switch( object_id )
+	{
+	case 0:
+		speed = s.getSpeed();
+		break;
+
+	case 1:
+		speed = e.getSpeed();
+		break;
+
+	default:
+		speed = bullets[ object_id - 2 ]->getSpeed();
+		break;
+	}
+
+lua_pushnumber( L, (lua_Number)speed );
 return 1;
 }
 
@@ -283,7 +291,24 @@ assert( lua_gettop( L ) == 1 );
 int object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
-lua_pushnumber(L, (lua_Number) 1. );
+float speed;
+
+switch( object_id )
+	{
+	case 0:
+		speed = s.getTopSpeed();
+		break;
+
+	case 1:
+		speed = e.getTopSpeed();
+		break;
+
+	default:
+		speed = bullets[ object_id - 2 ]->getTopSpeed();
+		break;
+	}
+
+lua_pushnumber( L, (lua_Number)speed );
 return 1;
 }
 
@@ -296,6 +321,8 @@ lua_pushinteger( L, OBJECT_UPDATE_CURRENT );
 return 1;
 }
 
+static void register_functions( lua_State * L )
+{
 #define STRINGIZE_2(_x) #_x
 #define STRINGIZE(_x) STRINGIZE_2(_x)
 #define ENTRY( _name ) { STRINGIZE( _name ), (_name) }
@@ -328,8 +355,6 @@ const lua_funcs[]=
 	ENTRY( object_update_state )
 	};
 
-static void register_functions( lua_State * L )
-{
 size_t i;
 for( i = 0; i < sizeof( lua_funcs ) / sizeof( lua_funcs[0] ); ++i )
 	{
@@ -531,9 +556,7 @@ glTranslatef( 0.0, 0.0, -15.0 ); glError();
 glRotatef( 100 * tim_angle.read(), 1.0, 0.0, 0.0 );
 
 s.draw();
-
 e.draw();
-
 for( size_t i = 0; i < bullets.size(); ++i )
 	{
 	bullets[i]->draw();
@@ -592,6 +615,16 @@ static void run_AI( void )
 		}
 
 	lua_close(L);
+}
+
+static void calculate_state( void )
+{
+s.calcState();
+e.calcState();
+for( size_t i = 0; i < bullets.size(); ++i )
+	{
+	bullets[i]->calcState();
+	}
 }
 
 int main( int argc, char* argv[] )
@@ -708,6 +741,7 @@ int main( int argc, char* argv[] )
 		check_collisions();//run gamestate
 		run_AI();
         process_events();//Process incoming events.
+		calculate_state();
         draw_screen();//Draw the screen.
     }
 
