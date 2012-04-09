@@ -1,6 +1,14 @@
 #include <time.h>
+#include <sys/time.h>
 
 #include "timer.h"
+
+static double get_time()
+{
+timeval tp;
+gettimeofday( &tp, NULL);
+return tp.tv_sec + (double)tp.tv_usec / 1000000;
+}
 
 bool timer::running()
 {
@@ -29,14 +37,14 @@ timer::~timer()
 void timer::reset()
 {
 is_running = true;
-time = clock() / (double)CLOCKS_PER_SEC;
+time = get_time();
 }
 
 double timer::read()
 {
 if( is_running )
     {
-    return clock() / (double)CLOCKS_PER_SEC - time;
+    return get_time() - time;
     }
 else
     {
@@ -49,7 +57,7 @@ void timer::pause()
 if( is_running )
     {
     is_running = false;
-    time = clock() / (double)CLOCKS_PER_SEC - time;
+    time = get_time() - time;
     }
 }
 
@@ -58,6 +66,6 @@ void timer::resume()
 if( !is_running )
     {
     is_running = true;
-    time = clock() / (double)CLOCKS_PER_SEC - time;
+    time = get_time() - time;
     }
 }

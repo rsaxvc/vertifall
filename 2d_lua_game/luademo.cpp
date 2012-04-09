@@ -18,6 +18,7 @@
 #include "ship.h"
 #include "timer.h"
 #include "timer_bidi.h"
+#include "periodic_controller.h"
 
 extern "C"
 	{
@@ -727,23 +728,22 @@ int main( int argc, char* argv[] )
         quit_tutorial( 1 );
     }
 
-    /*
-     * At this point, we should have a properly setup
-     * double-buffered window for use with OpenGL.
-     */
-    setup_opengl( width, height );
+	/*
+	 * At this point, we should have a properly setup
+	 * double-buffered window for use with OpenGL.
+	 */
+	setup_opengl( width, height );
 
-    /*
-     * Now we want to begin our normal app process--
-     * an event loop with a lot of redrawing.
-     */
-    while( 1 ) {
-		check_collisions();//run gamestate
+	//main loop
+	periodic_controller periodic( 0.015 );
+	do
+		{
 		run_AI();
         process_events();//Process incoming events.
 		calculate_state();
-        draw_screen();//Draw the screen.
-    }
+		check_collisions();//run gamestate
+        //draw_screen();//Draw the screen.
+    	}while( periodic.wait() );
 
     /*
      * EXERCISE:

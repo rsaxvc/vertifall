@@ -19,7 +19,8 @@ luademo:\
 	ship.o\
 	enemy.o\
 	bullet.o\
-	luademo.o
+	luademo.o\
+	periodic_controller.o
 	g++ -o $@ $? ${LFLAGS}
 
 clean:
