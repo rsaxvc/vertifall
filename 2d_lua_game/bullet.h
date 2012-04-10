@@ -1,15 +1,11 @@
 #ifndef BULLET_H
 #define BULLET_H
 
-#include "timer.h"
 #include "entity.h"
 #include "position.h"
 
 class bullet : private entity
 	{
-	private:
-		timer tim;
-
 	public:
 		bullet( const position & spawn_pos );
 		~bullet();

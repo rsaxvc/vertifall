@@ -3,7 +3,9 @@
 
 #include <cmath>
 #include <cstdio>
+
 #include "enemy.h"
+#include "game.h"
 
 #define glError() { \
 	GLenum err = glGetError(); \
@@ -13,9 +15,8 @@
 	} \
 }
 
-#define RADIUS 7
-#define SPEED 9
-#define SCALAR ( RADIUS * 2 / SPEED )
+#define RADIUS 7.0
+#define SPEED 0.5
 #define WIDTH 1
 #define HEIGHT 1
 
@@ -36,8 +37,7 @@ return vel;
 
 void enemy::calcState()
 {
-double ang;
-ang = SCALAR * tim.read();
+ang += SPEED * TIMESTEP;
 
 pos.x = 0 + RADIUS*cos(ang);
 pos.y = 2 + RADIUS*sin(ang);
@@ -65,7 +65,7 @@ return pos;
 
 enemy::enemy()
 {
-tim.resume();
+ang=0;
 }
 
 enemy::~enemy()

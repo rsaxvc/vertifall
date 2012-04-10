@@ -15,6 +15,7 @@
 #include "bbox.h"
 #include "bullet.h"
 #include "enemy.h"
+#include "game.h"
 #include "ship.h"
 #include "timer.h"
 #include "timer_bidi.h"
@@ -735,14 +736,14 @@ int main( int argc, char* argv[] )
 	setup_opengl( width, height );
 
 	//main loop
-	periodic_controller periodic( 0.015 );
+	periodic_controller periodic( TIMESTEP );
 	do
 		{
 		run_AI();
         process_events();//Process incoming events.
 		calculate_state();
 		check_collisions();//run gamestate
-        //draw_screen();//Draw the screen.
+        draw_screen();//Draw the screen.
     	}while( periodic.wait() );
 
     /*

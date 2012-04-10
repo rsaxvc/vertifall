@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "game.h"
 #include "bullet.h"
 
 #define SPEED 8
@@ -36,13 +37,11 @@ bullet::~bullet()
 bullet::bullet( const position & input )
 {
 pos = input;
-tim.reset();
 }
 
 void bullet::calcState()
 {
-pos.y += SPEED * tim.read();
-tim.reset();
+pos.y += SPEED * TIMESTEP;
 
 box.nec.x = pos.x + WIDTH;
 box.nec.y = pos.y + HEIGHT + HEIGHT;
