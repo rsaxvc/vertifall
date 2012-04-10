@@ -5,14 +5,15 @@
 #include "entity.h"
 #include "position.h"
 #include "velocity.h"
-#include "timer_bidi.h"
 
 class ship : private entity
     {
 	private:
 
     public:
-		timer_bidirectional tim_x;
+		bool moving;
+		bool left;
+
 		inline entity_class getClass(){return CLASS_PLAYER;};
 
         ship();

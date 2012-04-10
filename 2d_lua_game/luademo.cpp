@@ -399,26 +399,26 @@ static void handle_key_down( SDL_keysym* keysym )
         break;
 
     case SDLK_LEFT:
-		if( s.tim_x.running() )
+		if( s.moving )
 			{
-			s.tim_x.pause();
+			s.moving = false;
 			}
 		else
 			{
-			s.tim_x.count_up();
-			s.tim_x.resume();
+			s.moving = true;
+			s.left = true;
 			}
         break;
 
     case SDLK_RIGHT:
-		if( s.tim_x.running() )
+		if( s.moving )
 			{
-			s.tim_x.pause();
+			s.moving = false;
 			}
 		else
 			{
-			s.tim_x.count_down();
-			s.tim_x.resume();
+			s.left = false;
+			s.moving = true;;
 			}
         break;
 
@@ -461,26 +461,26 @@ static void handle_key_up( SDL_keysym* keysym )
     switch( keysym->sym )
 	{
     case SDLK_LEFT:
-		if( s.tim_x.running() )
+		if( s.moving )
 			{
-	        s.tim_x.pause();
+	        s.moving = false;
 			}
 		else
 			{
-			s.tim_x.count_down();
-			s.tim_x.resume();
+			s.left = false;;
+			s.moving = true;
 			}
         break;
 
     case SDLK_RIGHT:
-		if( s.tim_x.running() )
+		if( s.moving )
 			{
-	        s.tim_x.pause();
+	        s.moving = false;
 			}
 		else
 			{
-			s.tim_x.count_up();
-			s.tim_x.resume();
+			s.left = true;
+			s.moving = true;
 			}
         break;
 

@@ -3,6 +3,8 @@
 
 #include <cmath>
 #include <cstdio>
+
+#include "game.h"
 #include "ship.h"
 
 #define SPEED 6
@@ -39,28 +41,27 @@ return vel;
 
 void ship::calcState()
 {
-pos.x = -SPEED * tim_x.read();
-pos.y = -8;
+vel.dy = 0;
+vel.dz = 0;
+if( !moving )
+	{
+	vel.dx = 0;
+	}
+else if( left )
+	{
+	vel.dx = -SPEED;
+	}
+else
+	{
+	vel.dx = SPEED;
+	}
+
+pos.x += vel.dx * TIMESTEP;
 
 box.nec.x = pos.x + WIDTH;
 box.nec.y = pos.y + HEIGHT;
 box.swc.x = pos.x - WIDTH;
 box.swc.y = pos.y - HEIGHT;
-
-vel.dy = 0;
-vel.dz = 0;
-if( tim_x.counting_up() )
-	{
-	vel.dx = -SPEED;
-	}
-else if( tim_x.counting_down() )
-	{
-	vel.dx = SPEED;
-	}
-else
-	{
-	vel.dx = 0;
-	}
 }
 
 const position & ship::getPos()
@@ -70,7 +71,15 @@ return pos;
 
 ship::ship()
 {
+vel.dx = 0;
+vel.dy = 0;
+vel.dz = 0;
+
 pos.x = 0;
+pos.y = -8;
+pos.z = 0;
+
+moving = false;
 }
 
 ship::~ship()
