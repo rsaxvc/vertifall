@@ -15,6 +15,9 @@
 #define glError() {GLenum err = glGetError();while (err != GL_NO_ERROR) {fprintf(stderr, "glError: %s caught at %s:%u\n",(char *)gluErrorString(err), __FILE__, __LINE__);err = glGetError();}}
 
 ship s;
+/* Dimensions of our window. */
+int width = 0;
+int height = 0;
 int score = 0;
 int oldscore=score;
 
@@ -31,114 +34,17 @@ static void handle_key_down( SDL_keysym* keysym )
         quit_tutorial( 0 );
         break;
 
-    case SDLK_LEFT:
-		if( s.tim_x.running() )
-			{
-			s.tim_x.pause();
-			}
-		else
-			{
-			s.tim_x.count_up();
-			s.tim_x.resume();
-			}
-        break;
-
-    case SDLK_RIGHT:
-		if( s.tim_x.running() )
-			{
-			s.tim_x.pause();
-			}
-		else
-			{
-			s.tim_x.count_down();
-			s.tim_x.resume();
-			}
-        break;
-
-    case SDLK_DOWN:
-		if( s.tim_y.running() )
-			{
-			s.tim_y.pause();
-			}
-		else
-			{
-			s.tim_y.count_up();
-			s.tim_y.resume();
-			}
-        break;
-
-    case SDLK_UP:
-		if( s.tim_y.running() )
-			{
-			s.tim_y.pause();
-			}
-		else
-			{
-			s.tim_y.count_down();
-			s.tim_y.resume();
-			}
-		break;
-
 	case SDLK_SPACE:
 		s.expand();
-		break;
-
-    default:
-        break;
-    }
-
-}
-
-static void handle_key_up( SDL_keysym* keysym )
-{
-    switch( keysym->sym )
-	{
-    case SDLK_LEFT:
-		if( s.tim_x.running() )
-			{
-	        s.tim_x.pause();
-			}
-		else
-			{
-			s.tim_x.count_down();
-			s.tim_x.resume();
-			}
-        break;
-
-    case SDLK_RIGHT:
-		if( s.tim_x.running() )
-			{
-	        s.tim_x.pause();
-			}
-		else
-			{
-			s.tim_x.count_up();
-			s.tim_x.resume();
-			}
-        break;
-
-    case SDLK_DOWN:
-		if( s.tim_y.running() )
-			{
-			s.tim_y.pause();
-			}
-		else
-			{
-			s.tim_y.count_down();
-			s.tim_y.resume();
-			}
-        break;
-
-    case SDLK_UP:
-		if( s.tim_y.running() )
-			{
-			s.tim_y.pause();
-			}
-		else
-			{
-			s.tim_y.count_up();
-			s.tim_y.resume();
-			}
+		s.expand();
+		s.expand();
+		s.expand();
+		s.expand();
+		s.expand();
+		s.expand();
+		s.expand();
+		s.expand();
+		s.expand();
 		break;
 
     default:
@@ -156,9 +62,11 @@ static void process_events( void )
     while( SDL_PollEvent( &event ) ) {
 
         switch( event.type ) {
-        case SDL_KEYUP:
-            handle_key_up( &event.key.keysym );
-			break;
+        case SDL_MOUSEMOTION:
+            s.pos.x =  30*( event.motion.x - width /2) / (double)width;
+            s.pos.y = -12*( event.motion.y - height/2) / (double)height;
+            printf("%f %f\n",s.pos.x,s.pos.y);
+            break;
 
         case SDL_KEYDOWN:
             /* Handle key presses. */
@@ -231,13 +139,10 @@ static void setup_opengl( int width, int height )
     gluPerspective( 60.0, ratio, 1.0, 1024.0 );
 }
 
-int main( int argc, char* argv[] )
+int main()
 {
     /* Information about the current video settings. */
     const SDL_VideoInfo* info = NULL;
-    /* Dimensions of our window. */
-    int width = 0;
-    int height = 0;
     /* Color depth in bits of our window. */
     int bpp = 0;
     /* Flags we will pass into SDL_SetVideoMode. */
@@ -250,6 +155,8 @@ int main( int argc, char* argv[] )
              SDL_GetError( ) );
         quit_tutorial( 1 );
     }
+
+    SDL_ShowCursor( false );
 
     /* Let's get some video information. */
     info = SDL_GetVideoInfo( );
@@ -315,7 +222,7 @@ int main( int argc, char* argv[] )
      * glViewport.
      */
     flags = SDL_OPENGL | SDL_FULLSCREEN;
-    flags = SDL_OPENGL;
+//    flags = SDL_OPENGL;
 
     /*
      * Set the video mode

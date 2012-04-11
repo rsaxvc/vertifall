@@ -8,7 +8,7 @@
 #include "position.h"
 #include "timer_bidi.h"
 
-class ship : private entity
+class ship : public entity
     {
 	private:
 		void calcPos();
@@ -17,8 +17,6 @@ class ship : private entity
 		std::list<position> tail;
 
     public:
-		timer_bidirectional tim_x;
-		timer_bidirectional tim_y;
 
         ship();
         ~ship();

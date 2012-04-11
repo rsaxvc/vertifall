@@ -5,7 +5,7 @@
 #include <cstdio>
 #include "ship.h"
 
-#define MAX_DIST .5
+#define MAX_DIST .1
 
 #define WIDTH 1.0
 #define HEIGHT 1.0
@@ -63,8 +63,6 @@ return pos;
 
 void ship::calcPos()
 {
-pos.x = -8 * tim_x.read();
-pos.y = -8 * tim_y.read();
 }
 
 ship::ship()
