@@ -1,7 +1,6 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#include <cmath>
 #include <cstdio>
 
 #include "game.h"
@@ -19,24 +18,9 @@
 	} \
 }
 
-float ship::getSpeed()
-{
-return sqrt( vel.dx*vel.dx + vel.dy*vel.dy + vel.dz*vel.dz );
-}
-
 float ship::getTopSpeed()
 {
 return SPEED;
-}
-
-const bbox & ship::getBbox()
-{
-return box;
-}
-
-const velocity & ship::getVel()
-{
-return vel;
 }
 
 void ship::calcState()
@@ -64,11 +48,6 @@ box.swc.x = pos.x - WIDTH;
 box.swc.y = pos.y - HEIGHT;
 }
 
-const position & ship::getPos()
-{
-return pos;
-}
-
 ship::ship()
 {
 vel.dx = 0;
@@ -91,7 +70,7 @@ void ship::draw()
 glPushMatrix();
 glError();
 
-glTranslatef( pos.x, pos.y, 0 );
+glTranslatef( pos.x, pos.y, pos.z );
 glError();
 
 glBegin( GL_LINES );

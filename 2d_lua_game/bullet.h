@@ -4,7 +4,7 @@
 #include "entity.h"
 #include "position.h"
 
-class bullet : private entity
+class bullet : public entity
 	{
 	public:
 		bullet( const position & spawn_pos );

@@ -29,16 +29,18 @@ class entity
 		velocity vel;
 
 	public:
-		virtual inline entity_class getClass()=0;
-		virtual const bbox & getBbox()=0;
-		virtual const position & getPos()=0;
-		virtual const velocity & getVel()=0;
-		virtual float getSpeed()=0;
+		virtual entity_class getClass()=0;
+		virtual const bbox & getBbox();
+		virtual const position & getPos();
+		virtual const velocity & getVel();
+		virtual float getSpeed();
 		virtual float getTopSpeed()=0;
 
 		virtual void draw()=0;
 
 		virtual void calcState()=0;
+
+		virtual void setVel( const velocity & vel );
 	};
 
 #endif

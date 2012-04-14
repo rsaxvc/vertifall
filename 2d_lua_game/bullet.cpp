@@ -1,7 +1,6 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 
@@ -73,7 +72,7 @@ void bullet::draw()
 glPushMatrix();
 glError();
 
-glTranslatef( pos.x, pos.y, 0 );
+glTranslatef( pos.x, pos.y, pos.z );
 glError();
 
 glBegin( GL_LINES );

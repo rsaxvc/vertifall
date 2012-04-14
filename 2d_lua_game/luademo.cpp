@@ -10,6 +10,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include <algorithm>
+#include <deque>
 #include <vector>
 
 #include "bbox.h"
@@ -30,12 +32,24 @@ extern "C"
 
 #define glError() {GLenum err = glGetError();while (err != GL_NO_ERROR) {fprintf(stderr, "glError: %s caught at %s:%u\n",(char *)gluErrorString(err), __FILE__, __LINE__);err = glGetError();}}
 
-ship s;
-enemy e;
 timer_bidirectional tim_angle;
-std::vector<bullet*> bullets;
+
+ship s;
 int score = 0;
-int oldscore=score;
+size_t update_index;
+
+std::deque<entity*> entities;
+std::deque<enemy*> enemies;
+std::deque<bullet*> bullets;
+
+std::vector<bullet*> new_bullets;//this round's bullets
+
+std::vector<velocity> next_velocities;
+
+void sanity_check( void )
+{
+assert( entities.size() == enemies.size() + bullets.size() + 1 );
+}
 
 enum
 	{
@@ -48,7 +62,7 @@ enum
 static int global_num_objects( lua_State * L )
 {
 assert( lua_gettop( L ) == 0 );
-lua_pushinteger( L, 1 + 1 + bullets.size() );//player+enemy+bullets
+lua_pushinteger( L, entities.size() );//player+enemy+bullets
 return 1;
 }
 
@@ -66,6 +80,7 @@ return 1;
 static int local_id( lua_State * L )
 {
 assert( lua_gettop( L ) == 0 );
+printf("fixme:local_id\n");
 lua_pushinteger( L, 0 );
 return 1;
 }
@@ -75,46 +90,21 @@ static int object_projected_bbox( lua_State * L )
 {
 assert( lua_gettop( L ) == 2 );
 
-int object_id = lua_tointeger( L, -1 );
+size_t object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
 int delta_t = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
-bbox box;
-velocity vel;
+const bbox & box = entities[object_id]->getBbox();
+const velocity & vel = entities[object_id]->getVel();
 
-switch( object_id )
-	{
-	case 0:
-		box = s.getBbox();
-		vel = s.getVel();
-		break;
-
-	case 1:
-		box = e.getBbox();
-		vel = e.getVel();
-		break;
-
-	default:
-		box = bullets[object_id-2]->getBbox();
-		vel = bullets[object_id-2]->getVel();
-		break;
-	}
-
-box.nec.x += vel.dx * delta_t;
-box.swc.x += vel.dx * delta_t;
-box.nec.y += vel.dy * delta_t;
-box.swc.y += vel.dy * delta_t;
-box.nec.z += vel.dz * delta_t;
-box.swc.z += vel.dz * delta_t;
-
-lua_pushnumber( L, box.nec.x );
-lua_pushnumber( L, box.swc.x );
-lua_pushnumber( L, box.nec.y );
-lua_pushnumber( L, box.swc.y );
-lua_pushnumber( L, box.nec.z );
-lua_pushnumber( L, box.swc.z );
+lua_pushnumber( L, box.nec.x + vel.dx * delta_t );
+lua_pushnumber( L, box.swc.x + vel.dx * delta_t );
+lua_pushnumber( L, box.nec.y + vel.dy * delta_t );
+lua_pushnumber( L, box.swc.y + vel.dy * delta_t );
+lua_pushnumber( L, box.nec.z + vel.dz * delta_t );
+lua_pushnumber( L, box.swc.z + vel.dz * delta_t );
 
 return 6;
 }
@@ -130,23 +120,10 @@ static int object_class( lua_State * L )
 {
 assert( lua_gettop( L ) == 1 );
 
-int object_id = lua_tointeger( L, -1 );
+size_t object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
-switch( object_id )
-	{
-	case 0:
-		lua_pushinteger( L, CLASS_PLAYER );
-		break;
-
-	case 1:
-		lua_pushinteger( L, CLASS_GOON );
-		break;
-
-	default:
-		lua_pushinteger( L, CLASS_BULLET );
-		break;
-	}
+lua_pushinteger( L, entities[ object_id ]->getClass() );
 return 1;
 }
 
@@ -174,24 +151,9 @@ return 1;
 /*a name, possibly unique to the specific object*/
 static int object_name( lua_State * L )
 {
-assert( lua_gettop( L ) == 1 );
-
-int object_id = lua_tointeger( L, -1 );
-lua_pop( L, 1 );
-
-if( object_id == 0 )
-	{
-	lua_pushstring( L, "player" );
-	}
-else if( object_id == 1 )
-	{
-	lua_pushstring( L, "enemy" );
-	}
-else
-	{
-	lua_pushstring( L, "bullet" );
-	}
-return 1;
+printf("fixme:object_name\n");
+//should handle player name eventually
+return object_class_name( L );
 }
 
 /*position of object, projected a number of game updates*/
@@ -199,39 +161,18 @@ static int object_projected_location( lua_State * L )
 {
 assert( lua_gettop( L ) == 2 );
 
-int object_id = lua_tointeger( L, -1 );
+size_t object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
 int delta_t = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
-position pos;
-velocity vel;
-switch( object_id )
-	{
-	case 0:
-		pos = s.getPos();
-		vel = s.getVel();
-		break;
+const position & pos = entities[object_id]->getPos();
+const velocity & vel = entities[object_id]->getVel();
 
-	case 1:
-		pos = e.getPos();
-		vel = e.getVel();
-		break;
-
-	default:
-		pos = bullets[object_id-2]->getPos();
-		vel = bullets[object_id-2]->getVel();
-		break;
-	}
-
-pos.x += vel.dx * delta_t;
-pos.y += vel.dy * delta_t;
-pos.z += vel.dz * delta_t;
-
-lua_pushnumber( L, (lua_Number)pos.x );
-lua_pushnumber( L, (lua_Number)pos.y );
-lua_pushnumber( L, (lua_Number)pos.z );
+lua_pushnumber( L, (lua_Number)( pos.x + vel.dx * delta_t ) );
+lua_pushnumber( L, (lua_Number)( pos.y + vel.dy * delta_t ) );
+lua_pushnumber( L, (lua_Number)( pos.z + vel.dz * delta_t ) );
 
 return 3;
 }
@@ -247,12 +188,14 @@ static int object_velocity( lua_State * L )
 {
 assert( lua_gettop( L ) == 1 );
 
-int object_id = lua_tointeger( L, -1 );
+size_t object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
-lua_pushnumber( L, (lua_Number)1. );
-lua_pushnumber( L, (lua_Number)2. );
-lua_pushnumber( L, (lua_Number)3. );
+const velocity & v = entities[ object_id ]->getVel();
+
+lua_pushnumber( L, (lua_Number)v.dx );
+lua_pushnumber( L, (lua_Number)v.dy );
+lua_pushnumber( L, (lua_Number)v.dz );
 return 3;
 }
 
@@ -261,27 +204,10 @@ static int object_speed( lua_State * L )
 {
 assert( lua_gettop( L ) == 1 );
 
-int object_id = lua_tointeger( L, -1 );
+size_t object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
-float speed;
-
-switch( object_id )
-	{
-	case 0:
-		speed = s.getSpeed();
-		break;
-
-	case 1:
-		speed = e.getSpeed();
-		break;
-
-	default:
-		speed = bullets[ object_id - 2 ]->getSpeed();
-		break;
-	}
-
-lua_pushnumber( L, (lua_Number)speed );
+lua_pushnumber( L, (lua_Number)entities[object_id]->getSpeed() );
 return 1;
 }
 
@@ -290,36 +216,31 @@ static int object_top_speed( lua_State * L )
 {
 assert( lua_gettop( L ) == 1 );
 
-int object_id = lua_tointeger( L, -1 );
+size_t object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
-float speed;
-
-switch( object_id )
-	{
-	case 0:
-		speed = s.getTopSpeed();
-		break;
-
-	case 1:
-		speed = e.getTopSpeed();
-		break;
-
-	default:
-		speed = bullets[ object_id - 2 ]->getTopSpeed();
-		break;
-	}
-
-lua_pushnumber( L, (lua_Number)speed );
+lua_pushnumber( L, (lua_Number)entities[ object_id ]->getTopSpeed() );
 return 1;
 }
 
 static int object_update_state( lua_State * L )
 {
-int object_id = lua_tointeger( L, -1 );
+size_t object_id = lua_tointeger( L, -1 );
 lua_pop( L, 1 );
 
-lua_pushinteger( L, OBJECT_UPDATE_CURRENT );
+if( object_id  > update_index )
+	{
+	lua_pushinteger( L, OBJECT_UPDATE_NOTYET );
+	}
+else if( object_id == update_index )
+	{
+	lua_pushinteger( L, OBJECT_UPDATE_CURRENT );
+	}
+else
+	{
+	lua_pushinteger( L, OBJECT_UPDATE_DONE );
+	}
+
 return 1;
 }
 
@@ -357,23 +278,28 @@ const lua_funcs[]=
 	ENTRY( object_update_state )
 	};
 
-size_t i;
-for( i = 0; i < sizeof( lua_funcs ) / sizeof( lua_funcs[0] ); ++i )
+for( size_t i = 0; i < sizeof( lua_funcs ) / sizeof( lua_funcs[0] ); ++i )
 	{
 	lua_register( L, lua_funcs[i].name, lua_funcs[i].func );
 	}
 }
 
+static void check_boundaries()
+{
+//this should purge bullets+enemies that are offscreen
+}
+
 static void check_collisions()
 {
+int oldscore = score;
 size_t i;
-
-for( i = 0; i < bullets.size(); ++i )
+for( i = bullets.size(); i > 0; --i )
 	{
-	if( collision( bullets[i]->getBbox(), e.getBbox() ) )
+	if( collision( (bullets[i-1])->getBbox(), enemies[0]->getBbox() ) )
 		{
-		delete bullets[i];
-		bullets.erase(bullets.begin()+i);
+		entities.erase(std::find(entities.begin(),entities.end(),bullets[i-1]));
+		delete bullets[i-1];
+		bullets.erase(bullets.begin() + i - 1);
 		score++;
 		}
 	}
@@ -447,8 +373,10 @@ static void handle_key_down( SDL_keysym* keysym )
 		break;
 
 	case SDLK_SPACE:
-		bullets.push_back( new bullet( s.getPos() ) );
+		{
+		new_bullets.push_back( new bullet( s.getPos() ) );
 		break;
+		}
 
     default:
         break;
@@ -557,11 +485,9 @@ glTranslatef( 0.0, 0.0, -15.0 ); glError();
 
 glRotatef( 100 * tim_angle.read(), 1.0, 0.0, 0.0 );
 
-s.draw();
-e.draw();
-for( size_t i = 0; i < bullets.size(); ++i )
+for( size_t i = 0; i < entities.size(); ++i )
 	{
-	bullets[i]->draw();
+	entities[i]->draw();
 	}
 
 /*
@@ -584,7 +510,6 @@ static void setup_opengl( int width, int height )
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
     glEnable( GL_CULL_FACE );
-	glEnable( GL_MULTISAMPLE_ARB );
 
     /* Set the clear color. */
     glClearColor( 0, 0, 0, 0 );
@@ -621,12 +546,33 @@ static void run_AI( void )
 
 static void calculate_state( void )
 {
-s.calcState();
-e.calcState();
-for( size_t i = 0; i < bullets.size(); ++i )
+for( size_t i = 0; i < entities.size(); ++i )
 	{
-	bullets[i]->calcState();
+	entities[i]->calcState();
 	}
+}
+
+//copy current velcities to buffer
+void prepare_velocities( void )
+{
+assert( 0 == next_velocities.size() );
+next_velocities.reserve( entities.size() );
+
+for( size_t i = 0; i < entities.size(); ++i )
+	{
+	next_velocities.push_back( entities[i]->getVel() );
+	}
+}
+
+//copy updated velocities back to game entities
+void apply_velocities( void )
+{
+assert( entities.size() == next_velocities.size() );
+for( size_t i = 0; i < entities.size(); ++i )
+	{
+	entities[i]->setVel( next_velocities[i] );
+	}
+next_velocities.clear();
 }
 
 int main( int argc, char* argv[] )
@@ -668,7 +614,7 @@ int main( int argc, char* argv[] )
      * safe. Under Win32, ChangeDisplaySettings
      * can change the bpp.
      */
-    width = 700;
+    width = 800;
     height = 600;
 //    width = 1280;
 //    height = 768;
@@ -735,15 +681,35 @@ int main( int argc, char* argv[] )
 	 */
 	setup_opengl( width, height );
 
+	enemy * badguy = new enemy;
+	entities.push_back( badguy );
+	enemies.push_back( badguy );
+
+	entities.push_back( &s );
+
 	//main loop
 	periodic_controller periodic( TIMESTEP );
 	do
 		{
+		prepare_velocities();
 		run_AI();
         process_events();//Process incoming events.
+		sanity_check();
+		apply_velocities();
+
 		calculate_state();
-		check_collisions();//run gamestate
+
+		check_collisions();
+		sanity_check();
+
+		check_boundaries();//run gamestate
+		sanity_check();
+
         draw_screen();//Draw the screen.
+
+		bullets.insert( bullets.end(), new_bullets.begin(), new_bullets.end() );
+		entities.insert( entities.end(), new_bullets.begin(), new_bullets.end() );
+		new_bullets.clear();
     	}while( periodic.wait() );
 
     /*

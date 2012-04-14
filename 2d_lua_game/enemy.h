@@ -6,7 +6,7 @@
 #include "position.h"
 #include "velocity.h"
 
-class enemy : private entity
+class enemy : public entity
     {
 	private:
 		double ang;
@@ -15,10 +15,6 @@ class enemy : private entity
         enemy();
         ~enemy();
 		inline entity_class getClass(){return CLASS_GOON;};
-		const bbox & getBbox();
-		const position & getPos();
-		const velocity & getVel();
-		float getSpeed();
 		float getTopSpeed();
 
         void draw();

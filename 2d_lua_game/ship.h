@@ -6,7 +6,7 @@
 #include "position.h"
 #include "velocity.h"
 
-class ship : private entity
+class ship : public entity
     {
 	private:
 
@@ -19,10 +19,6 @@ class ship : private entity
         ship();
         ~ship();
 
-		const bbox & getBbox();
-		const position & getPos();
-		const velocity & getVel();
-		float getSpeed();
 		float getTopSpeed();
 
         void draw();
