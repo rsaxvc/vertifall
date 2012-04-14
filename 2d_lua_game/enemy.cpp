@@ -27,15 +27,9 @@ return SPEED;
 
 void enemy::calcState()
 {
-ang += SPEED * TIMESTEP;
-
-pos.x = 0 + RADIUS*cos(ang);
-pos.y = 2 + RADIUS*sin(ang);
-pos.z = 0;
-
-vel.dx = RADIUS*sin(ang);
-vel.dy = RADIUS*cos(ang);
-vel.dz = 0;
+pos.x += vel.dx * TIMESTEP;
+pos.y += vel.dy * TIMESTEP;
+pos.z += vel.dz * TIMESTEP;
 
 box.nec.x = pos.x + WIDTH;
 box.nec.y = pos.y + HEIGHT;
@@ -45,7 +39,18 @@ box.swc.y = pos.y - HEIGHT;
 
 enemy::enemy()
 {
-ang=0;
+vel.dx = 0;
+vel.dy = 0;
+vel.dz = 0;
+
+pos.x = 0;
+pos.y = 2;
+pos.z = 0;
+
+box.nec.x = pos.x + WIDTH;
+box.nec.y = pos.y + HEIGHT;
+box.swc.x = pos.x - WIDTH;
+box.swc.y = pos.y - HEIGHT;
 }
 
 enemy::~enemy()

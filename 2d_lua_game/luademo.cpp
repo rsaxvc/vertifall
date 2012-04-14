@@ -80,8 +80,8 @@ return 1;
 static int local_id( lua_State * L )
 {
 assert( lua_gettop( L ) == 0 );
-printf("fixme:local_id\n");
-lua_pushinteger( L, 0 );
+fprintf(stderr,"fixme:local_id\n");
+lua_pushinteger( L, 1 );
 return 1;
 }
 
@@ -151,7 +151,7 @@ return 1;
 /*a name, possibly unique to the specific object*/
 static int object_name( lua_State * L )
 {
-printf("fixme:object_name\n");
+fprintf( stderr, "fixme:object_name\n");
 //should handle player name eventually
 return object_class_name( L );
 }
@@ -197,6 +197,29 @@ lua_pushnumber( L, (lua_Number)v.dx );
 lua_pushnumber( L, (lua_Number)v.dy );
 lua_pushnumber( L, (lua_Number)v.dz );
 return 3;
+}
+
+static int object_set_velocity( lua_State * L )
+{
+assert( lua_gettop( L ) == 4 );
+
+size_t object_id = lua_tointeger( L, -1 );
+lua_pop( L, 1 );
+
+velocity vel;
+
+vel.dz = lua_tonumber( L, -1 );
+lua_pop( L, 1 );
+
+vel.dy = lua_tonumber( L, -1 );
+lua_pop( L, 1 );
+
+vel.dx = lua_tonumber( L, -1 );
+lua_pop( L, 1 );
+
+next_velocities[ object_id ] = vel;
+
+return 0;
 }
 
 /*current speed of object*/
@@ -275,7 +298,10 @@ const lua_funcs[]=
 	ENTRY( object_name ),
 	ENTRY( object_class ),
 	ENTRY( object_class_name ),
-	ENTRY( object_update_state )
+	ENTRY( object_update_state ),
+
+	//Commands-per-object
+	ENTRY( object_set_velocity ),
 	};
 
 for( size_t i = 0; i < sizeof( lua_funcs ) / sizeof( lua_funcs[0] ); ++i )
@@ -538,7 +564,7 @@ static void run_AI( void )
 
 	if( luaL_dofile(L,"foo.lua") )
 		{
-		printf("Lua error:%s\n",lua_tostring( L, 1 ) );
+		fprintf(stderr,"Lua error:%s\n",lua_tostring( L, 1 ) );
 		}
 
 	lua_close(L);
@@ -681,11 +707,12 @@ int main( int argc, char* argv[] )
 	 */
 	setup_opengl( width, height );
 
+	entities.push_back( &s );
+
 	enemy * badguy = new enemy;
 	entities.push_back( badguy );
 	enemies.push_back( badguy );
 
-	entities.push_back( &s );
 
 	//main loop
 	periodic_controller periodic( TIMESTEP );

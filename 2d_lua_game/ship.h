@@ -11,6 +11,8 @@ class ship : public entity
 	private:
 
     public:
+		velocity vel;
+
 		bool moving;
 		bool left;
 
