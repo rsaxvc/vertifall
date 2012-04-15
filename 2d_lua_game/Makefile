@@ -1,6 +1,7 @@
 #debian appears to be making the switch to better multiarch support, but until pkgconfig handles it, hardcode away
-LFLAGS= /usr/lib/i386-linux-gnu/liblua5.1.so -lSDL -lGL -lGLU
-CFLAGS=-O0 -g -Wall -I /usr/include/lua5.1 -Wextra
+LFLAGS  = `pkg-config --libs lua5.1` -lSDL -lGL -lGLU
+CFLAGS  = -O0 -g -Wall -Wextra
+CFLAGS += `pkg-config --cflags lua5.1`
 CPPFLAGS=$(CFLAGS)
 SOURCES=`ls *.cpp`
 BUILDS=luademo
