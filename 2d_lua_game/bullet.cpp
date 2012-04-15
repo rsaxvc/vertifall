@@ -7,9 +7,9 @@
 #include "game.h"
 #include "bullet.h"
 
-#define SPEED 8
-#define WIDTH .25
-#define HEIGHT .5
+#define SPEED 12
+#define WIDTH .15
+#define HEIGHT .25
 
 #define glError() { \
 	GLenum err = glGetError(); \

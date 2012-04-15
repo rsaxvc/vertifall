@@ -1,12 +1,12 @@
 #ifndef ENEMY_H
 #define ENEMY_H
 
-#include "entity.h"
+#include "unit.h"
 
 #include "position.h"
 #include "velocity.h"
 
-class enemy : public entity
+class enemy : public unit
     {
 	private:
 		double ang;
@@ -20,6 +20,7 @@ class enemy : public entity
         void draw();
 
 		void calcState();
+		bool fire();
     };
 
 #endif

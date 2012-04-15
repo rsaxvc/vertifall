@@ -400,7 +400,7 @@ static void handle_key_down( SDL_keysym* keysym )
 
 	case SDLK_SPACE:
 		{
-		new_bullets.push_back( new bullet( s.getPos() ) );
+		s.firing = true;
 		break;
 		}
 
@@ -461,6 +461,12 @@ static void handle_key_up( SDL_keysym* keysym )
 			tim_angle.resume();
 			}
 		break;
+
+	case SDLK_SPACE:
+		{
+		s.firing = false;
+		break;
+		}
 
     default:
         break;
@@ -721,6 +727,7 @@ int main( int argc, char* argv[] )
 		prepare_velocities();
 		run_AI();
         process_events();//Process incoming events.
+		if( s.firing && s.fire() )new_bullets.push_back( new bullet( s.getPos() ) );
 		sanity_check();
 		apply_velocities();
 

@@ -2,11 +2,11 @@
 #define SHIP_H
 
 #include "bbox.h"
-#include "entity.h"
+#include "unit.h"
 #include "position.h"
 #include "velocity.h"
 
-class ship : public entity
+class ship : public unit
     {
 	private:
 
@@ -26,6 +26,9 @@ class ship : public entity
         void draw();
 
 		void calcState();
+
+		bool firing;
+		bool fire();
     };
 
 #endif

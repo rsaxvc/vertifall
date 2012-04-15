@@ -9,6 +9,7 @@
 #define SPEED 6
 #define WIDTH 1.0
 #define HEIGHT 1.0
+#define COOLDOWN 10
 
 #define glError() { \
 	GLenum err = glGetError(); \
@@ -16,6 +17,16 @@
 		fprintf(stderr, "glError: %s caught at %s:%u\n", (char *)gluErrorString(err), __FILE__, __LINE__); \
 		err = glGetError(); \
 	} \
+}
+
+bool ship::fire()
+{
+if( weapon_cooldown == 0 )
+	{
+	weapon_cooldown = COOLDOWN;
+	return true;
+	}
+return false;
 }
 
 float ship::getTopSpeed()
@@ -46,6 +57,11 @@ box.nec.x = pos.x + WIDTH;
 box.nec.y = pos.y + HEIGHT;
 box.swc.x = pos.x - WIDTH;
 box.swc.y = pos.y - HEIGHT;
+
+if( weapon_cooldown > 0 )
+	{
+	weapon_cooldown--;
+	}
 }
 
 ship::ship()
@@ -59,6 +75,8 @@ pos.y = -8;
 pos.z = 0;
 
 moving = false;
+
+weapon_cooldown = 0;
 }
 
 ship::~ship()

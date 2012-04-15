@@ -19,6 +19,18 @@
 #define SPEED 0.5
 #define WIDTH 1
 #define HEIGHT 1
+#define COOLDOWN 60
+
+bool enemy::fire()
+{
+if( weapon_cooldown == 0 )
+    {
+    weapon_cooldown = COOLDOWN;
+    return true;
+    }
+return false;
+}
+
 
 float enemy::getTopSpeed()
 {
@@ -35,6 +47,11 @@ box.nec.x = pos.x + WIDTH;
 box.nec.y = pos.y + HEIGHT;
 box.swc.x = pos.x - WIDTH;
 box.swc.y = pos.y - HEIGHT;
+
+if( weapon_cooldown > 0 )
+	{
+	weapon_cooldown--;
+	}
 }
 
 enemy::enemy()
@@ -51,6 +68,8 @@ box.nec.x = pos.x + WIDTH;
 box.nec.y = pos.y + HEIGHT;
 box.swc.x = pos.x - WIDTH;
 box.swc.y = pos.y - HEIGHT;
+
+weapon_cooldown = COOLDOWN;
 }
 
 enemy::~enemy()
